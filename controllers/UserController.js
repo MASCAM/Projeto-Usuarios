@@ -95,7 +95,7 @@ class UserController {
                 if (field.checked) {
         
                     user[field.name] = field.value;
-                    
+
                 }
         
             } else if (field.name == 'admin') {
@@ -132,7 +132,7 @@ class UserController {
                         <td>${dataUser.name}</td>
                         <td>${dataUser.email}</td>
                         <td>${(dataUser.admin) ? 'Sim' : 'Não'}</td>
-                        <td>${dataUser.register}</td>
+                        <td>${Utils.dateFormat(dataUser.register)}</td>
                         <td>
                           <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
                           <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
