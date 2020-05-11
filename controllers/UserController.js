@@ -16,6 +16,11 @@ class UserController {
             let btn = this.formEl.querySelector("[type=submit]");
             btn.disabled = true; //impede que o botão seja pressionado varias vezes
             let values = this.getValues();
+            if (!values) {
+
+                return false;
+
+            }
             this.getPhoto().then(
                 //se resolve realiza a primeira função
                 //se reject realiza a segunda no promise da getPhoto()
@@ -138,9 +143,11 @@ class UserController {
 
     } //fechando getValues()
 
-    addLine(dataUser, tableId) {
+    addLine(dataUser) {
 
         let tr = document.createElement('tr');
+        tr.dataset.user = JSON.stringify(dataUser); //API JSON
+        //stringify transforma os atributos em string
         tr.innerHTML = `
             <tr>
                         <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
@@ -155,7 +162,28 @@ class UserController {
                       </tr>
         `;
         this.tableEl.appendChild(tr);
+        this.updateCount();
     
     } //fechando o addLine();
+
+    updateCount() {
+
+        let numberUsers = 0;
+        let numberAdmin = 0;
+        [...this.tableEl.children].forEach(tr => {
+
+            numberUsers++;
+            let user = JSON.parse(tr.dataset.user); //transforma a string JSON em objeto
+            if (user._admin) {
+
+                numberAdmin++;
+
+            }
+
+        });
+        document.querySelector("#number-users").innerHTML = numberUsers;
+        document.querySelector("#number-users-admin").innerHTML = numberAdmin;
+
+    } //fechando o updateCount()
 
 } //fechando a classe UserController()
