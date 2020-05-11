@@ -88,8 +88,18 @@ class UserController {
     getValues() {
 
         let user = {}; //notação de objeto (JSon)
+        let isValid = true;
         [...this.formEl.elements].forEach(function(field, index){ //reticências = Spread
             //abre todos os elementos do formulário num array
+            if (['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value) {
+                //se qualquer um desses campos no if estiverem vazios, impede o envio do formulário
+                field.parentElement.classList.add('has-error');
+                //para colocar um indicador de erro no elemento acima do formulário (no html5)
+                isValid = false;
+                return false; // se o formulário for inválido cancela a operação
+
+            }
+
             if (field.name == "gender") {
         
                 if (field.checked) {
@@ -109,7 +119,12 @@ class UserController {
             }
         
         });
-    
+        
+        if (!isValid) {
+
+            return false;
+
+        }
         return new User(
             user.name, 
             user.gender, 
