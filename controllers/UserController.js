@@ -42,19 +42,9 @@ class UserController {
                         result._photo = content;
 
                     }
-                    tr.dataset.user = JSON.stringify(result);
-                    tr.innerHTML = `
-                        <td><img src="${result._photo}" alt="User Image" class="img-circle img-sm"></td>
-                        <td>${result._name}</td>
-                        <td>${result._email}</td>
-                        <td>${(result._admin) ? 'Sim' : 'Não'}</td>
-                        <td>${Utils.dateFormat(result._register)}</td>
-                        <td>
-                          <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-                          <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
-                        </td>
-                    `;
-                    this.addEventsTr(tr);
+                    let user = new User();
+                    user.loadFromJSON(result); //para poder passar os dados do usuário pra tr
+                    this.getTr(user, tr);
                     this.updateCount();
                     this.formUpdateEl.reset(); //para resetar o formulário de edição
                     btn.disabled = false; //reseta o formulário e o botão submit
@@ -116,7 +106,7 @@ class UserController {
         //**Nota: Foi muito difícil entender tudo isso**/
         //recebe uma função para o retorno da API fileReader
         return new Promise((resolve, reject) => {
-            //Promise é uma classe por isso precisa ser cirada
+            //Promise é uma classe por isso precisa ser criada
             //basicamente recebe uma função com dois argumentos que são duas funções
             //caso resolve realiza a primeira função
             //caso reject faz a segunda
@@ -249,11 +239,23 @@ class UserController {
 
     } //fechando o insert
 
-    addLine(dataUser) {
+    addLine(dataUser) { //adiciona uma nova linha da tr na tabela
 
-        let tr = document.createElement('tr');
-        tr.dataset.user = JSON.stringify(dataUser); //API JSON
+        let tr = this.getTr(dataUser);
         //stringify transforma os atributos em string
+        this.tableEl.appendChild(tr);
+        this.updateCount(); //atualiza o número de usuários e administradores
+    
+    } //fechando o addLine();
+
+    getTr(dataUser, tr = null) { //passando tr como valor padrão (parâmetro opcional)
+        //seleciona a tr a ser gerada
+        if (tr === null) {
+
+            tr = document.createElement('tr');
+
+        }
+        tr.dataset.user = JSON.stringify(dataUser); //API JSON
         tr.innerHTML = `
             <tr>
                         <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
@@ -268,10 +270,9 @@ class UserController {
                       </tr>
         `;
         this.addEventsTr(tr);
-        this.tableEl.appendChild(tr);
-        this.updateCount();
-    
-    } //fechando o addLine();
+        return tr;
+
+    }
 
     addEventsTr(tr) {
 
