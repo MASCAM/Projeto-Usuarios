@@ -7,6 +7,7 @@ class UserController {
         this.tableEl = document.getElementById(tableId);
         this.onSubmit();
         this.onEdit();
+        this.selectAll();
 
     } //fechando o constructor()
 
@@ -92,6 +93,7 @@ class UserController {
                 (content) => {
 
                     values.photo = content;
+                    this.insert(values);
                     this.addLine(values);
                     this.formEl.reset(); 
                     btn.disabled = false; //reseta o formulário e o botão submit
@@ -208,6 +210,45 @@ class UserController {
 
     } //fechando getValues()
 
+    getUsersStorage() { //método q retorna todos os usuários ja cadastrados na sessão
+
+        let users = []; //para poder armazenar todas as chaves de usuários
+        if (localStorage.getItem("users")) {  //para armazenar no navegador
+            //se já haviam usuários cadastrados na sessão, importa eles para o array users
+            users = JSON.parse(localStorage.getItem("users"))
+
+        }
+        /*if (sessionStorage.getItem("users")) {
+            //se já haviam usuários cadastrados na sessão, importa eles para o array users
+            users = JSON.parse(sessionStorage.getItem("users"))
+
+        } */ //para armazenamento na sessão
+        return users;
+
+    } //fechando o getUsersStorage()
+
+    selectAll() { //para cada um dos usuários cadastrados na sessão, realiza o display na tela
+
+        let users = this.getUsersStorage();
+        users.forEach(dataUser => {
+
+            let user = new User(); //pois o user retornado da getUsersStorage é um JSON, não um objeto em si
+            user.loadFromJSON(dataUser);
+            this.addLine(user);
+
+        });
+
+    } //fechando o selectAll()
+
+    insert(data) {
+
+        let users = this.getUsersStorage();
+        users.push(data);
+        localStorage.setItem("users", JSON.stringify(users)); //armazena no navegador
+        // sessionStorage.setItem("users", JSON.stringify(users)); //grava dados na sessão
+
+    } //fechando o insert
+
     addLine(dataUser) {
 
         let tr = document.createElement('tr');
@@ -222,7 +263,7 @@ class UserController {
                         <td>${Utils.dateFormat(dataUser.register)}</td>
                         <td>
                           <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-                          <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
+                          <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
                         </td>
                       </tr>
         `;
@@ -234,6 +275,16 @@ class UserController {
 
     addEventsTr(tr) {
 
+        tr.querySelector(".btn-delete").addEventListener("click", e=>{
+
+            if (confirm("Deseja realmente excluir?")) {
+
+                tr.remove();
+                this.updateCount();
+
+            }
+        
+        });
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
 
             let json = JSON.parse(tr.dataset.user);
