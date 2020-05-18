@@ -24,22 +24,50 @@ class UserController {
             btn.disabled = true; //impede que o botão seja pressionado varias vezes
             let values = this.getValues(this.formUpdateEl);
             let index = this.formUpdateEl.dataset.trIndex;
-            let tr = this.tableEl.rows[index];
-            tr.dataset.user = JSON.stringify(values);
-            tr.innerHTML = `
-                        <td><img src="${values.photo}" alt="User Image" class="img-circle img-sm"></td>
-                        <td>${values.name}</td>
-                        <td>${values.email}</td>
-                        <td>${(values.admin) ? 'Sim' : 'Não'}</td>
-                        <td>${Utils.dateFormat(values.register)}</td>
+            let tr = this.tableEl.rows[index]; //para pegar a linha do usuário a ser editado
+            let userOld = JSON.parse(tr.dataset.user); //carrega os valores antigos que ainda estão no formulário
+            let result = Object.assign({}, userOld, values); //substitui os valores antigos pelos novos em um novo objeto
+            this.getPhoto(this.formUpdateEl).then(
+                //se resolve realiza a primeira função
+                //se reject realiza a segunda no promise da getPhoto()
+                (content) => {
+
+                    if (!values.photo) {
+                        //se não mudou a foto carrega a antiga
+                        result._photo = userOld._photo;
+        
+                    } else {
+
+                        result._photo = content;
+
+                    }
+                    tr.dataset.user = JSON.stringify(result);
+                    tr.innerHTML = `
+                        <td><img src="${result._photo}" alt="User Image" class="img-circle img-sm"></td>
+                        <td>${result._name}</td>
+                        <td>${result._email}</td>
+                        <td>${(result._admin) ? 'Sim' : 'Não'}</td>
+                        <td>${Utils.dateFormat(result._register)}</td>
                         <td>
                           <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
                           <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
                         </td>
-                      </tr>
-            `;
-            this.addEventsTr(tr);
-            this.updateCount();
+                    `;
+                    this.addEventsTr(tr);
+                    this.updateCount();
+                    this.formUpdateEl.reset(); //para resetar o formulário de edição
+                    btn.disabled = false; //reseta o formulário e o botão submit
+                    this.showPanelCreate(); //para mostrar a tela do formulario de cadastro
+
+                }, 
+
+                (e) => {
+
+                    console.error(e);
+
+                }
+
+            );
 
         });
 
@@ -58,7 +86,7 @@ class UserController {
                 return false;
 
             }
-            this.getPhoto().then(
+            this.getPhoto(this.formEl).then(
                 //se resolve realiza a primeira função
                 //se reject realiza a segunda no promise da getPhoto()
                 (content) => {
@@ -82,7 +110,7 @@ class UserController {
 
     } //fechando onSubmit()
 
-    getPhoto() { //pois o JS não sabe o real caminho do arquivo
+    getPhoto(formEl) { //pois o JS não sabe o real caminho do arquivo
         //**Nota: Foi muito difícil entender tudo isso**/
         //recebe uma função para o retorno da API fileReader
         return new Promise((resolve, reject) => {
@@ -91,7 +119,7 @@ class UserController {
             //caso resolve realiza a primeira função
             //caso reject faz a segunda
             let fileReader = new FileReader();
-            let elements = [...this.formEl.elements].filter(item => { //filtra nos elementos onde está o elemento
+            let elements = [...formEl.elements].filter(item => { //filtra nos elementos onde está o elemento
                 //que se chama photo, se houver correspondência, retorna o item
                 //para posteriormente ser manipulado
                 if (item.name === 'photo') {
@@ -209,11 +237,10 @@ class UserController {
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
 
             let json = JSON.parse(tr.dataset.user);
-            let form = document.querySelector("#form-user-update");
-            form.dataset.trIndex = tr.sectionRowIndex;
+            this.formUpdateEl.dataset.trIndex = tr.sectionRowIndex;
             for (let name in json) { //para cada nome em json (laço para percorrer objetos)
                 //seleciona cada um dos campos cujo nome está no json
-                let field = form.querySelector("[name=" + name.replace("_", "") + "]"); 
+                let field = this.formUpdateEl.querySelector("[name=" + name.replace("_", "") + "]"); 
                 //pois o json separa os nomes dos atributos dos objetos com '_' numa string
                 if (field) {   //só atribui o valor se o campo existir e possuir um valor
                 
@@ -223,7 +250,7 @@ class UserController {
                             continue;
                             break;
                         case 'radio':
-                            field = form.querySelector("[name=" + name.replace("_", "") + "][value=" + json[name] + "]");
+                            field = this.formUpdateEl.querySelector("[name=" + name.replace("_", "") + "][value=" + json[name] + "]");
                             field.checked = true;
                             break;
                         case 'checkbox':
@@ -237,6 +264,7 @@ class UserController {
                  }
 
             }
+            this.formUpdateEl.querySelector(".photo").src = json._photo;
             this.showPanelUpdate();
 
         });
