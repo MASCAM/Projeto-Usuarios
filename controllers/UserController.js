@@ -201,26 +201,9 @@ class UserController {
 
     } //fechando getValues()
 
-    getUsersStorage() { //método q retorna todos os usuários ja cadastrados na sessão
-
-        let users = []; //para poder armazenar todas as chaves de usuários
-        if (localStorage.getItem("users")) {  //para armazenar no navegador
-            //se já haviam usuários cadastrados na sessão, importa eles para o array users
-            users = JSON.parse(localStorage.getItem("users"))
-
-        }
-        /*if (sessionStorage.getItem("users")) {
-            //se já haviam usuários cadastrados na sessão, importa eles para o array users
-            users = JSON.parse(sessionStorage.getItem("users"))
-
-        } */ //para armazenamento na sessão
-        return users;
-
-    } //fechando o getUsersStorage()
-
     selectAll() { //para cada um dos usuários cadastrados na sessão, realiza o display na tela
 
-        let users = this.getUsersStorage();
+        let users = User.getUsersStorage();
         users.forEach(dataUser => {
 
             let user = new User(); //pois o user retornado da getUsersStorage é um JSON, não um objeto em si
@@ -272,6 +255,9 @@ class UserController {
 
             if (confirm("Deseja realmente excluir?")) {
 
+                let user = new User();
+                user.loadFromJSON(JSON.parse(tr.dataset.user)); //pega o usuário na tabela transforma pra JSON e depois transforma para objeto e armazena em user
+                user.remove();
                 tr.remove();
                 this.updateCount();
 

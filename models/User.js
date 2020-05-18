@@ -118,13 +118,15 @@ class User {
 
     getNewId() {
 
-        if (!window.id) {
+        let usersID = parseInt(localStorage.getItem("usersID"));
+        if (!usersID > 0) {
             
-            window.id = 0; //criando a variável id na janela
+            usersID = 0; //criando a variável id na janela
 
         }
-        id++; //incrementando o id
-        return id; //retorna o id para ser armazenado no objeto usuário
+        usersID++; //incrementando o id
+        localStorage.setItem("usersID", usersID);
+        return usersID; //retorna o id para ser armazenado no objeto usuário
 
     } //fechando o getNewId()
 
@@ -154,5 +156,21 @@ class User {
         localStorage.setItem("users", JSON.stringify(users)); //armazena no navegador
     
     } //fechando o save()
+
+    remove() {
+
+        let users = User.getUsersStorage();
+        users.forEach((userData, index) => {
+
+            if (this._id == userData._id) {
+
+                users.splice(index, 1); //remove um item a partir desse índice
+                
+            }
+
+        });
+        localStorage.setItem("users", JSON.stringify(users)); //armazena no navegador
+
+    } //fechando o remove
 
 }
