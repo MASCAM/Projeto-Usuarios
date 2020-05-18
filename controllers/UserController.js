@@ -44,6 +44,7 @@ class UserController {
                     }
                     let user = new User();
                     user.loadFromJSON(result); //para poder passar os dados do usuário pra tr
+                    user.save();
                     this.getTr(user, tr);
                     this.updateCount();
                     this.formUpdateEl.reset(); //para resetar o formulário de edição
@@ -83,7 +84,7 @@ class UserController {
                 (content) => {
 
                     values.photo = content;
-                    this.insert(values);
+                    values.save();
                     this.addLine(values);
                     this.formEl.reset(); 
                     btn.disabled = false; //reseta o formulário e o botão submit
@@ -229,15 +230,6 @@ class UserController {
         });
 
     } //fechando o selectAll()
-
-    insert(data) {
-
-        let users = this.getUsersStorage();
-        users.push(data);
-        localStorage.setItem("users", JSON.stringify(users)); //armazena no navegador
-        // sessionStorage.setItem("users", JSON.stringify(users)); //grava dados na sessão
-
-    } //fechando o insert
 
     addLine(dataUser) { //adiciona uma nova linha da tr na tabela
 
